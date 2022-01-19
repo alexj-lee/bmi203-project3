@@ -3,7 +3,7 @@ from scipy import spatial
 from sklearn import metrics
 from typing import Union, Callable
 
-
+# thought we needed to do this ourselves, is superfluous
 def get_pairwise_distances(
     X: np.ndarray, metric: Union[str, Callable] = "euclidean", **kwargs
 ):
@@ -30,4 +30,4 @@ def get_pairwise_distances(
     pdist[
         np.diag_indices_from(pdist)
     ] = np.inf  # set self-connection weight to infinity
-    return metrics.pairwise_distances(X, metric=metric, **kwargs)
+    return pdist

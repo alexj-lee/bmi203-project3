@@ -89,7 +89,8 @@ def test_mst_single_cell_data():
 
 
 def test_mst_student():
-    # see make-graph.py for steps to make graph
+    # see make-graph.py for steps to make graph; erdosrenyi.png for a graphic (doesn't include edge weights)
+
     file_path = "./test/erdosrenyi.txt"
 
     g = Graph(np.genfromtxt(file_path))

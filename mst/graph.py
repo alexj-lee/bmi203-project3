@@ -5,7 +5,7 @@ from typing import Union, Set
 
 class Graph:
     def __init__(self, adjacency_mat: Union[np.ndarray, str], construct: bool = False):
-        """[summary]
+        """Takes a adjacency matrix encoding a graph for construction of a minimum spanning tree using Prim's algorithm.
 
         Args:
             adjacency_mat (Union[np.ndarray, str]): Path to adjacency matrix to load with delimiter ',' or adjacency matrix in numpy array form.
@@ -23,6 +23,9 @@ class Graph:
 
         if self.adj_mat.dtype != float:
             self.adj_mat = self.adj_mat.astype(float)
+
+        if np.allclose(self.adj_mat, self.adj_mat.T):
+            raise ValueError("Adjacency matrix is asymmetric.")
 
         self.num_nodes = len(self.adj_mat)
         self.queue = []
@@ -84,6 +87,8 @@ class Graph:
 
         Sets:
             self.mst: np array with lower triangular entries as connections in a minimum spanning tree.
+
+        TODO: I would guess there's some way to make it work for a disconnected graph, but I'm not sure how to go about it..
         """
 
         adj_mat = self.adj_mat.copy()
