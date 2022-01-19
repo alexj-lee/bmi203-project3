@@ -5,10 +5,14 @@ from typing import Union, Set
 
 class Graph:
     def __init__(self, adjacency_mat: Union[np.ndarray, str], construct: bool = False):
-        """Unlike project 2, this Graph class takes an adjacency matrix as input. `adjacency_mat`
-        can either be a 2D numpy array of floats or the path to a CSV file containing a 2D numpy array of floats.
+        """[summary]
 
-        In this project, we will assume `adjacency_mat` corresponds to the adjacency matrix of an undirected graph
+        Args:
+            adjacency_mat (Union[np.ndarray, str]): [description]
+            construct (bool, optional): [description]. Defaults to False.
+
+        Raises:
+            TypeError: [description]
         """
         if type(adjacency_mat) == str:
             self.adj_mat = self._load_adjacency_matrix_from_csv(adjacency_mat)
@@ -34,51 +38,79 @@ class Graph:
     def _add_connected_nodes_to_queue(
         self, node: int, unused_nodes: Set[int], adj_mat: np.ndarray
     ):
+        """
+        Will add neighbors of `node` that we haven't put in the tree already (not in unused_nodes set) into the queue.
+        Queue is a list/heapq that holds elements representing vertices that are (weight, node @ start of vertex, node @ end of vertex)
+
+        Args:
+            node (int): node index
+            unused_nodes (Set[int]): set of nodes we have already added to the tree
+            adj_mat (np.ndarray): adjacency matrix we will build the tree from
+        """
+
         for unused_node_idx in unused_nodes:
             weight = adj_mat[node, unused_node_idx]
             edge_tuple = (weight, node, unused_node_idx)
             heapq.heappush(self.queue, edge_tuple)
 
     def _get_next_edge(self, nodes: Set[int]):
+        """
+        Will use pop vertices (weight, start_node, end_node) where start_node and end_node \
+            are node indices until we find one where end_node isn't in the nodes set.
+
+        Args:
+            nodes (Set[int]): A set of nodes that we haven't seen yet.
+
+        Returns:
+            tuple representing the next vertex in the tree: (weight of node, node @ start of vertex, node @ end of vertex)
+        """
+
         end_node = None
 
-        while end_node not in nodes:
+        while (
+            end_node not in nodes
+        ):  # this will run until we get a vertex for which end_node is a new node we haven't seen yet
             weight, start_node, end_node = heapq.heappop(self.queue)
 
         return weight, start_node, end_node
 
     def construct_mst(self):
-        """Given `self.adj_mat`, the adjacency matrix of a connected undirected graph, implement Prim's
-        algorithm to construct an adjacency matrix encoding the minimum spanning tree of `self.adj_mat`.
+        """
+        Will construct a minimum spanning tree (MST) from the given connected symmetric adjacency matrix.
+        We:
+            1. select a random vertex, find neighbors and put them into self.queue (_add_connected_nodes_to_queue)
+            2. pop minimum weight vertex (indices u, v) from self.queue and if we haven't seen node v, add it to the tree
+            3. continue until we've added every node
 
-        `self.adj_mat` is a 2D numpy array of floats.
-        Note that because we assume our input graph is undirected, `self.adj_mat` is symmetric.
-        Row i and column j represents the edge weight between vertex i and vertex j. An edge weight of zero indicates that no edge exists.
-
-        TODO:
-            This function does not return anything. Instead, store the adjacency matrix
-        representation of the minimum spanning tree of `self.adj_mat` in `self.mst`.
-        We highly encourage the use of priority queues in your implementation. See the heapq
-        module, particularly the `heapify`, `heappop`, and `heappush` functions.
+        Sets:
+            self.mst: np array with lower triangular entries as connections in a minimum spanning tree.
         """
 
         adj_mat = self.adj_mat.copy()
         np.nan_to_num(adj_mat, nan=np.inf, copy=False)
-        adj_mat[adj_mat == 0] = np.inf
 
-        self.mst = np.zeros_like(adj_mat)
+        adj_mat[
+            adj_mat == 0
+        ] = np.inf  # prevent unconnected entries from being added to tree artificially
 
-        nodes = list(range(self.num_nodes))
+        self.mst = np.zeros_like(adj_mat)  # set of mst placeholder matrix
 
-        start_node = np.random.choice(nodes, size=1).item()
+        nodes = list(
+            range(self.num_nodes)
+        )  # set up list of nodes; we will use this to track which nodes we used/saw already
+
+        start_node = np.random.choice(nodes, size=1).item()  # get start node
         nodes = set(nodes)
 
-        self.num_nodes = self.num_nodes - 1
+        # adjust num_nodes and remove start_node from set of seen nodes
+        num_nodes = self.num_nodes - 1
         nodes.remove(start_node)
 
-        self._add_connected_nodes_to_queue(start_node, nodes, adj_mat)
+        self._add_connected_nodes_to_queue(
+            start_node, nodes, adj_mat
+        )  # add vertices with start_node at the start to the queue
 
-        while self.num_nodes > 0:
+        while num_nodes > 0:  # keep going until we added all nodes
             weight, start_node, end_node = self._get_next_edge(nodes)
 
             # make sure we return a lower triangular matrix
@@ -87,12 +119,13 @@ class Graph:
             else:
                 self.mst[end_node, start_node] = weight
 
-            nodes.remove(end_node)
-            self._add_connected_nodes_to_queue(end_node, nodes, adj_mat)
-            self.num_nodes = self.num_nodes - 1
+            nodes.remove(end_node)  # remove end_node since we've used it already
+            self._add_connected_nodes_to_queue(
+                end_node, nodes, adj_mat
+            )  # add neighbors of next node to queue
+            num_nodes -= 1
 
         np.nan_to_num(
             self.mst, posinf=0, copy=False
         )  # if there are np.infs, it means there are n>1 connected components; we will zero these out
-
-        self.num_nodes = len(self.adj_mat)
+        # this is unnecesssary, I didn't realize before we didn't need to worry about unconnected graphs, but probably doesn't hurt
