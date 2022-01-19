@@ -70,20 +70,7 @@ class Graph:
         self._add_connected_nodes_to_queue(start_node, nodes)
 
         while self.num_nodes != 0:
-            if len(nodes) == 0:
-                print(self.num_nodes)
-                break
-
             weight, start_node, end_node = self._get_next_edge(nodes)
-            #            while True:
-            #                weight, start_node, end_node = heapq.heappop(self.queue)
-            #                if end_node not in nodes:
-            #                    pass
-            #                else:
-            #                    break
-            #
-            #            print("doing", weight, start_node, end_node, nodes)
-
             if start_node < end_node:  # so we can return an upper triangular matrix
                 self.mst[start_node, end_node] = weight
             else:
@@ -92,4 +79,3 @@ class Graph:
             nodes.remove(end_node)
             self._add_connected_nodes_to_queue(end_node, nodes)
             self.num_nodes = self.num_nodes - 1
-            print(self.num_nodes)
