@@ -94,3 +94,5 @@ class Graph:
         np.nan_to_num(
             self.mst, posinf=0, copy=False
         )  # if there are np.infs, it means there are n>1 connected components; we will zero these out
+
+        self.num_nodes = len(self.adj_mat)

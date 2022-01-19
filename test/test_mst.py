@@ -85,10 +85,13 @@ def test_mst_single_cell_data():
     dist_mat = pairwise_distances(coords)
     g = Graph(dist_mat)
     g.construct_mst()
-    print("mst is ", g.mst.sum())
     check_mst(g.adj_mat, g.mst, 57.263561605571695)
 
 
 def test_mst_student():
-    """TODO: Write at least one unit test for MST construction"""
-    pass
+    # see make-graph.py for steps to make graph
+    file_path = "./test/erdosrenyi.txt"
+
+    g = Graph(np.genfromtxt(file_path))
+    g.construct_mst()
+    check_mst(g.adj_mat, g.mst, 46.0)
