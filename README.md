@@ -1,3 +1,5 @@
+![BuildStatus](https://github.com/eelxela/bmi203-project3/actions/workflows/test.yml/badge.svg)
+
 # Project 3
 Minimum Spanning Trees
 
