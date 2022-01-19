@@ -24,7 +24,7 @@ class Graph:
         if self.adj_mat.dtype != float:
             self.adj_mat = self.adj_mat.astype(float)
 
-        if np.allclose(self.adj_mat, self.adj_mat.T):
+        if not np.allclose(self.adj_mat, self.adj_mat.T):
             raise ValueError("Adjacency matrix is asymmetric.")
 
         self.num_nodes = len(self.adj_mat)
