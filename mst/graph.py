@@ -8,11 +8,11 @@ class Graph:
         """[summary]
 
         Args:
-            adjacency_mat (Union[np.ndarray, str]): [description]
-            construct (bool, optional): [description]. Defaults to False.
+            adjacency_mat (Union[np.ndarray, str]): Path to adjacency matrix to load with delimiter ',' or adjacency matrix in numpy array form.
+            construct (bool, optional): Whether to create minimum spanning tree immediately. Defaults to False.
 
         Raises:
-            TypeError: [description]
+            TypeError: If adjacency matrix is not an np.ndarray or a valid path.
         """
         if type(adjacency_mat) == str:
             self.adj_mat = self._load_adjacency_matrix_from_csv(adjacency_mat)
