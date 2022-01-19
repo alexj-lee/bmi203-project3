@@ -1,11 +1,10 @@
-from tkinter import W
 import numpy as np
 import heapq
 from typing import Union, Set
 
 
 class Graph:
-    def __init__(self, adjacency_mat: Union[np.ndarray, str]):
+    def __init__(self, adjacency_mat: Union[np.ndarray, str], construct: bool = False):
         """Unlike project 2, this Graph class takes an adjacency matrix as input. `adjacency_mat`
         can either be a 2D numpy array of floats or the path to a CSV file containing a 2D numpy array of floats.
 
@@ -18,28 +17,34 @@ class Graph:
         else:
             raise TypeError("Input must be a valid path or an adjacency matrix")
 
+        if self.adj_mat.dtype != float:
+            self.adj_mat = self.adj_mat.astype(float)
+
         self.num_nodes = len(self.adj_mat)
         self.queue = []
 
         self.mst = None
-        self.construct_mst()
+        if construct:
+            self.construct_mst()
 
     def _load_adjacency_matrix_from_csv(self, path: str) -> np.ndarray:
         with open(path) as f:
             return np.loadtxt(f, delimiter=",")
 
-    def _add_connected_nodes_to_queue(self, node: int, unused_nodes: Set[int]):
+    def _add_connected_nodes_to_queue(
+        self, node: int, unused_nodes: Set[int], adj_mat: np.ndarray
+    ):
         for unused_node_idx in unused_nodes:
-            weight = self.adj_mat[node, unused_node_idx]
+            weight = adj_mat[node, unused_node_idx]
             edge_tuple = (weight, node, unused_node_idx)
             heapq.heappush(self.queue, edge_tuple)
-        # print("queue state", self.queue)
 
     def _get_next_edge(self, nodes: Set[int]):
         end_node = None
 
         while end_node not in nodes:
             weight, start_node, end_node = heapq.heappop(self.queue)
+
         return weight, start_node, end_node
 
     def construct_mst(self):
@@ -57,25 +62,35 @@ class Graph:
         module, particularly the `heapify`, `heappop`, and `heappush` functions.
         """
 
-        np.nan_to_num(self.adj_mat, nan=np.inf, copy=False)
-        self.adj_mat[self.adj_mat == 0] = np.inf
-        self.mst = np.zeros_like(self.adj_mat)
+        adj_mat = self.adj_mat.copy()
+        np.nan_to_num(adj_mat, nan=np.inf, copy=False)
+        adj_mat[adj_mat == 0] = np.inf
+
+        self.mst = np.zeros_like(adj_mat)
 
         nodes = list(range(self.num_nodes))
+
         start_node = np.random.choice(nodes, size=1).item()
         nodes = set(nodes)
+
         self.num_nodes = self.num_nodes - 1
         nodes.remove(start_node)
 
-        self._add_connected_nodes_to_queue(start_node, nodes)
+        self._add_connected_nodes_to_queue(start_node, nodes, adj_mat)
 
-        while self.num_nodes != 0:
+        while self.num_nodes > 0:
             weight, start_node, end_node = self._get_next_edge(nodes)
-            if start_node < end_node:  # so we can return an upper triangular matrix
+
+            # make sure we return a lower triangular matrix
+            if start_node > end_node:  # so we can return an lower triangular matrix
                 self.mst[start_node, end_node] = weight
             else:
                 self.mst[end_node, start_node] = weight
 
             nodes.remove(end_node)
-            self._add_connected_nodes_to_queue(end_node, nodes)
+            self._add_connected_nodes_to_queue(end_node, nodes, adj_mat)
             self.num_nodes = self.num_nodes - 1
+
+        np.nan_to_num(
+            self.mst, posinf=0, copy=False
+        )  # if there are np.infs, it means there are n>1 connected components; we will zero these out
