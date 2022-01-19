@@ -36,10 +36,11 @@ class Graph:
         # print("queue state", self.queue)
 
     def _get_next_edge(self, nodes: Set[int]):
-        while True:
+        end_node = None
+
+        while end_node not in nodes:
             weight, start_node, end_node = heapq.heappop(self.queue)
-            if end_node in nodes:
-                return weight, start_node, end_node
+        return weight, start_node, end_node
 
     def construct_mst(self):
         """Given `self.adj_mat`, the adjacency matrix of a connected undirected graph, implement Prim's
@@ -63,13 +64,15 @@ class Graph:
         nodes = list(range(self.num_nodes))
         start_node = np.random.choice(nodes, size=1).item()
         nodes = set(nodes)
+        self.num_nodes = self.num_nodes - 1
         nodes.remove(start_node)
 
         self._add_connected_nodes_to_queue(start_node, nodes)
 
-        while self.num_nodes > 0:
-            # if len(nodes) == 0:
-            #    break
+        while self.num_nodes != 0:
+            if len(nodes) == 0:
+                print(self.num_nodes)
+                break
 
             weight, start_node, end_node = self._get_next_edge(nodes)
             #            while True:
@@ -88,4 +91,5 @@ class Graph:
 
             nodes.remove(end_node)
             self._add_connected_nodes_to_queue(end_node, nodes)
-            self.num_nodes - 1
+            self.num_nodes = self.num_nodes - 1
+            print(self.num_nodes)
