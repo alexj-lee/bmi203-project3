@@ -92,7 +92,9 @@ class Graph:
         """
 
         adj_mat = self.adj_mat.copy()
-        np.nan_to_num(adj_mat, nan=np.inf, copy=False)
+        np.nan_to_num(
+            adj_mat, nan=np.inf, copy=False
+        )  # if there are nan's, they seem to screw up the heap order; whereas np.inf maintains heap
 
         adj_mat[
             adj_mat == 0
@@ -104,7 +106,9 @@ class Graph:
             range(self.num_nodes)
         )  # set up list of nodes; we will use this to track which nodes we used/saw already
 
-        start_node = np.random.choice(nodes, size=1).item()  # get start node
+        start_node = (
+            np.random.choice(nodes, size=1).astype(int).item()
+        )  # get start node; item needed to return an int rather than a size 1 np array
         nodes = set(nodes)
 
         # adjust num_nodes and remove start_node from set of seen nodes
@@ -119,7 +123,9 @@ class Graph:
             weight, start_node, end_node = self._get_next_edge(nodes)
 
             # make sure we return a lower triangular matrix
-            if start_node > end_node:  # so we can return an lower triangular matrix
+            if (
+                start_node > end_node
+            ):  # ex if start, end is 5, 10, instead of putting in upper triang, switch index ordering
                 self.mst[start_node, end_node] = weight
             else:
                 self.mst[end_node, start_node] = weight
