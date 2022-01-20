@@ -50,6 +50,9 @@ def check_mst(
 
         return is_correct
 
+    def no_diag_entries(mst):
+        return np.isclose(np.diag(mst).sum(), 0)
+
     total = 0
     for i in range(mst.shape[0]):
         for j in range(i + 1):
@@ -63,6 +66,9 @@ def check_mst(
     assert correct_value_ranges(
         mst, adj_mat
     ), "Proposed MST has weights u, v that are not in the right range for corresponding adjacency matrix"
+    assert no_diag_entries(
+        mst
+    ), "Proposed MST has self-links between nodes, which is not allowed."
 
 
 def test_mst_small():
@@ -90,7 +96,7 @@ def test_mst_single_cell_data():
 
 def test_mst_student():
     # see make-graph.py for steps to make graph; erdosrenyi.png for a graphic (doesn't include edge weights)
-    
+
     file_path = "./test/erdosrenyi.txt"
 
     g = Graph(np.genfromtxt(file_path))
