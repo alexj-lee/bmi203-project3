@@ -122,13 +122,8 @@ class Graph:
         while num_nodes > 0:  # keep going until we added all nodes
             weight, start_node, end_node = self._get_next_edge(nodes)
 
-            # make sure we return a lower triangular matrix
-            if (
-                start_node > end_node
-            ):  # ex if start, end is 5, 10, instead of putting in upper triang, switch index ordering
-                self.mst[start_node, end_node] = weight
-            else:
-                self.mst[end_node, start_node] = weight
+            self.mst[start_node, end_node] = weight
+            self.mst[end_node, start_node] = weight
 
             nodes.remove(end_node)  # remove end_node since we've used it already
             self._add_connected_nodes_to_queue(

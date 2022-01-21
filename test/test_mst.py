@@ -31,7 +31,7 @@ def check_mst(
         return abs(a - b) < allowed_error
 
     def correct_num_edges(mst):
-        num_edges_found = len(np.nonzero(mst)[0])
+        num_edges_found = len(np.nonzero(mst)[0]) / 2.0
         num_edges_expected = mst.shape[0] - 1
         return (
             num_edges_expected >= num_edges_found
@@ -39,19 +39,28 @@ def check_mst(
 
     def correct_value_ranges(mst, adj_mat):
         is_correct = True
-        mst_weight_indices = np.nonzero(mst)[0]
+        mst_weight_indices = np.nonzero(mst)
 
         min_vals = adj_mat.min(1)
         max_vals = adj_mat.max(1)
 
-        for idx, mst_weight in enumerate(mst_weight_indices):
-            if not (max_vals[idx] > mst_weight > min_vals[idx]):
+        # for idx, mst_weight in enumerate(mst_weight_indices):
+        #    if not (max_vals[idx] > mst_weight > min_vals[idx]):
+        #        is_correct = True
+
+        for idx, mst_ind in enumerate(zip(*mst_weight_indices)):
+            i, j = mst_ind
+            weight = mst[i, j]
+            if not (max_vals[i] > weight > min_vals[i]):
                 is_correct = True
 
         return is_correct
 
     def no_diag_entries(mst):
         return np.isclose(np.diag(mst).sum(), 0)
+
+    def symmetric(mst):
+        return np.allclose(mst, mst.T)
 
     total = 0
     for i in range(mst.shape[0]):
@@ -69,6 +78,7 @@ def check_mst(
     assert no_diag_entries(
         mst
     ), "Proposed MST has self-links between nodes, which is not allowed."
+    assert symmetric(mst), "Proposed MST is asymmetric."
 
 
 def test_mst_small():
@@ -102,3 +112,4 @@ def test_mst_student():
     g = Graph(np.genfromtxt(file_path))
     g.construct_mst()
     check_mst(g.adj_mat, g.mst, 46.0)
+
